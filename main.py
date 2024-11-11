@@ -1,3 +1,23 @@
+"""
+TODO:
+figure out how to create CSV to take from both studetns and assignemts, CSV saves all assignments and student data
+Finish management system
+make students inherit management system
+make assignemnts and students associate with gradebook class
+"""
+
+
+class Management_System:
+    def __init__(self, students, instructor, course):
+        self.students = {}
+        self.instructor = instructor
+        self.course = course
+        
+    def add_student(self, name, id_Number, email):
+        self.students[studnet_ID] = [name, id_Number, email]
+        
+
+
 class Assignment:
     def __init__(self, title, points, category, due):
         """creates a new assignment , assignment category, 
@@ -11,7 +31,8 @@ class Assignment:
         self.category = category
         self.due_date = due
 
-class Student:
+class Students(Management_System):
+    
     def __init__(self, name, idNum, email):
         """student name, ID, overall course grade
             TODO: calculate overall grade        
@@ -43,7 +64,7 @@ class Student:
         """returns student name,id,email"""
         return {
             'Student': self.name,
-            'ID': self.idNum,
+            'ID': self.id_Number,
             'Email': self.email
         }
 
