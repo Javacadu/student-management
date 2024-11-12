@@ -6,7 +6,53 @@ make students inherit management system
 make assignemnts and students associate with gradebook class
 """
 
+class Management_System:
+    
+    def __init__(self, instructor, course):
+        self.students = {}
+        self.instructor = instructor
+        self.course = course
+        
+    def add_student(self, name, student_ID, email):
+        self.students[student_ID] = {"name": name, "ID": student_ID, "Email": email}
+    
+    def getCourseInfo(self):
+        return {
+            'Course': self.course,
+            'Instructor': self.instructor,
+            'Students': self.students,
+        }
 
+class Student(Management_System):
+    def __init__():
+        pass
+    
+    def getStudentInfo(self, student_ID):
+        return self.students.get(student_ID)
+    
+
+class Assignment:
+    def __init__(self, title, points, category, due):
+        self.title = title
+        self.points = points
+        self.category = category
+        self.due = due
+        self.update_CSV()
+        
+    def update_CSV(self):
+        pass        
+
+
+cs22b = Management_System("AC", "CS 22B Python for Data Analytics")
+cs22b.add_student("Jacob A", "001", "jatanacio@sjsu.edu")
+
+print(cs22b.getCourseInfo())
+
+studentInfo = Student(cs22b)
+
+
+
+'''
 class Management_System:
     def __init__(self, students, instructor, course):
         self.students = {}
@@ -112,4 +158,4 @@ score1 = Score(student1, assignment1, 88)
 print(student1.get_score("Math Test"))
 print(student1.get_student_info())
 score1 = Score(student1, assignment1, 90)
-print(student1.get_score("Math Test"))
+print(student1.get_score("Math Test"))'''
