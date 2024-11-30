@@ -1,0 +1,248 @@
+import tkinter as tk
+from tkinter import messagebox
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+class Student:
+    def __init__(self, student_id, name, email, total_points=100):
+        self.student_id = student_id
+        self.name = name
+        self.email = email
+        self.total_points = total_points
+        self.assignments = {}
+
+    def add_assignment(self, assignment, score):
+        self.assignments[assignment.title] = score
+
+    def get_final_grade(self):
+        if not self.assignments:
+            return 0
+        return (sum(self.assignments.values()) / self.total_points) * 100
+
+    def get_letter_grade(self):
+        final_grade = self.get_final_grade()
+        if final_grade >= 90:
+            return 'A'
+        elif final_grade >= 80:
+            return 'B'
+        elif final_grade >= 70:
+            return 'C'
+        elif final_grade >= 60:
+            return 'D'
+        else:
+            return 'F'
+
+
+class Assignment:
+    def __init__(self, title, points, category, due_date):
+        self.title = title
+        self.points = points
+        self.category = category
+        self.due_date = due_date
+
+
+class Gradebook:
+    def __init__(self):
+        self.students = {}
+        self.assignments = []
+
+    def add_student(self, student):
+        self.students[student.student_id] = student
+
+    def add_assignment(self, assignment):
+        self.assignments.append(assignment)
+
+    def assign_grade(self, student_id, assignment, score):
+        student = self.students.get(student_id)
+        if student:
+            student.add_assignment(assignment, score)
+            self.save_to_csv()
+
+    def save_to_csv(self):
+        # Save all student grades and assignments to CSV
+        data = []
+        for student in self.students.values():
+            row = [student.name, student.student_id, student.email]
+            row.extend([student.assignments.get(assignment.title, 0) for assignment in self.assignments])
+            row.append(student.get_final_grade())
+            row.append(student.get_letter_grade())
+            data.append(row)
+
+        df = pd.DataFrame(data, columns=['Name', 'ID', 'Email'] + [a.title for a in self.assignments] + ['Final Grade', 'Letter Grade'])
+        df.set_index('Name', inplace=True)
+        df.to_csv("gradebook.csv")
+
+    def plot_final_grades(self):
+        final_grades = {student.name: student.get_final_grade() for student in self.students.values()}
+        letter_grades = {student.name: student.get_letter_grade() for student in self.students.values()}
+
+        graph = plt.bar(final_grades.keys(), final_grades.values(), color='blue')
+        for x in graph:
+            height = x.get_height()
+            plt.text(x.get_x() + x.get_width() / 2, height, f'{height:.2f}', ha='center', va='bottom', fontsize=10, color='black')
+
+        plt.xlabel('Students')
+        plt.ylabel('Final Grade')
+        plt.title('Final Grades of Students')
+        plt.show()
+
+
+class ProjectTeams:
+    def __init__(self, title, members=""):
+        self.title = title
+        self.members = members  # Now a single string to hold all members.
+
+    def add_member(self, student_name):
+        """Add a new member to the project as a string."""
+        if self.members:
+            self.members += ", " + student_name  # Append new member with a comma
+        else:
+            self.members = student_name  # First member, no comma needed
+
+    def get_team_info(self):
+        return {'Title': self.title, 'Members': self.members}
+
+
+
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Management System")
+        self.gradebook = Gradebook()
+        self.project_teams = {}
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Student Section
+        self.create_label_entry("Student Name", 0)
+        self.create_label_entry("Student ID", 1)
+        self.create_label_entry("Student Email", 2)
+        self.add_student_button = self.create_button("Add Student", self.add_student, 3)
+
+        # Assignment Section
+        self.create_label_entry("Assignment Title", 4)
+        self.assignment_points_entry = self.create_entry(5)  # Add missing entry
+        self.create_label_entry("Assignment Points", 5)
+        self.assignment_category_entry = self.create_entry(6)  # Create category entry
+        self.create_label_entry("Assignment Category", 6)
+        self.assignment_due_date_entry = self.create_entry(7)  # Create due date entry
+        self.create_label_entry("Assignment Due Date", 7)
+        self.add_assignment_button = self.create_button("Add Assignment", self.add_assignment, 8)
+
+        # Grade Assignment Section
+        self.create_label_entry("Student ID for Grade", 9)
+        self.create_label_entry("Assignment Title for Grade", 10)
+        self.create_label_entry("Score", 11)
+        self.assign_grade_button = self.create_button("Assign Grade", self.assign_grade, 12)
+
+        # Project Team Section
+        self.create_label_entry("Project Title", 13)
+        self.project_member_name_entry = self.create_entry(14)  # Create Team Member Name entry
+        self.create_label_entry("Team Member Name", 14)
+        self.add_project_button = self.create_button("Add Member to Project", self.add_team_member, 15)
+        self.create_project_button = self.create_button("Create Project Team", self.create_project_team, 16)
+
+        # View and Plot Grades
+        self.view_grades_button = self.create_button("View Grades (Plot)", self.view_grades, 17)
+
+        # View Assignments
+        self.view_assignments_button = self.create_button("View Assignments", self.view_assignments, 18)
+
+        # View Students Section
+        self.view_students_button = self.create_button("View Students", self.view_students, 19)
+
+        # View Project Teams Section
+        self.view_projects_button = self.create_button("View Project Teams", self.view_project_teams, 20)
+
+    def create_label_entry(self, label_text, row):
+        label = tk.Label(self.root, text=label_text)
+        label.grid(row=row, column=0)
+        entry = tk.Entry(self.root)
+        entry.grid(row=row, column=1)
+        setattr(self, label_text.replace(" ", "_").lower() + "_entry", entry)
+
+    def create_entry(self, row):
+        entry = tk.Entry(self.root)
+        entry.grid(row=row, column=1)
+        return entry
+
+    def create_button(self, text, command, row):
+        button = tk.Button(self.root, text=text, command=command)
+        button.grid(row=row, column=0, columnspan=2)
+        return button
+
+    def add_student(self):
+        name = self.student_name_entry.get()
+        student_id = self.student_id_entry.get()
+        email = self.student_email_entry.get()
+        student = Student(student_id, name, email)
+        self.gradebook.add_student(student)
+        self.gradebook.save_to_csv()
+        messagebox.showinfo("Success", f"Student {name} added successfully.")
+
+    def add_assignment(self):
+        title = self.assignment_title_entry.get()
+        points = int(self.assignment_points_entry.get())
+        category = self.assignment_category_entry.get()
+        due_date = self.assignment_due_date_entry.get()
+        assignment = Assignment(title, points, category, due_date)
+        self.gradebook.add_assignment(assignment)
+        self.gradebook.save_to_csv()
+        messagebox.showinfo("Success", f"Assignment {title} added successfully.")
+
+    def assign_grade(self):
+        student_id = self.student_id_for_grade_entry.get()
+        assignment_title = self.assignment_title_for_grade_entry.get()
+        score = int(self.score_entry.get())
+
+        assignment = next((a for a in self.gradebook.assignments if a.title == assignment_title), None)
+        if assignment:
+            self.gradebook.assign_grade(student_id, assignment, score)
+            messagebox.showinfo("Success", f"Grade for {assignment_title} assigned successfully.")
+        else:
+            messagebox.showerror("Error", "Assignment not found.")
+
+    def add_team_member(self):
+        project_title = self.project_title_entry.get()
+        member_name = self.project_member_name_entry.get()
+
+        if project_title not in self.project_teams:
+            self.project_teams[project_title] = ProjectTeams(project_title, member_name)
+        else:
+            self.project_teams[project_title].add_member(member_name)
+
+        messagebox.showinfo("Success", f"Member {member_name} added to project {project_title}.")
+
+    def create_project_team(self):
+        project_title = self.project_title_entry.get()
+        project = self.project_teams.get(project_title)
+        if project:
+            project_info = project.get_team_info()
+            messagebox.showinfo("Project Team", f"Project: {project_info['Title']}, Members: {project_info['Members']}")
+        else:
+            messagebox.showerror("Error", "Project not found.")
+
+    def view_grades(self):
+        self.gradebook.plot_final_grades()
+
+    def view_assignments(self):
+        assignments_info = "\n".join([f"{a.title} - {a.points} points, {a.category}, Due: {a.due_date}" for a in self.gradebook.assignments])
+        messagebox.showinfo("Assignments", assignments_info)
+
+    def view_students(self):
+        students_info = "\n".join([f"{s.name} ({s.student_id}), Email: {s.email}" for s in self.gradebook.students.values()])
+        messagebox.showinfo("Students", students_info)
+
+    def view_project_teams(self):
+        if not self.project_teams:
+            messagebox.showinfo("No Project Teams", "No project teams found.")
+        else:
+            project_info = "\n".join([f"Project: {p.title}, Members: {p.members}" for p in self.project_teams.values()])
+            messagebox.showinfo("Project Teams", project_info)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
