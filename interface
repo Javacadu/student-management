@@ -89,16 +89,16 @@ class Gradebook:
 
 
 class ProjectTeams:
-    def __init__(self, title, members=""):
+    def __init__(self, title, members):
         self.title = title
-        self.members = members  # Now a single string to hold all members.
+        self.members = [] 
 
     def add_member(self, student_name):
         """Add a new member to the project as a string."""
         if self.members:
-            self.members += ", " + student_name  # Append new member with a comma
+            self.members.append(student_name)
         else:
-            self.members = student_name  # First member, no comma needed
+            self.members = student_name  
 
     def get_team_info(self):
         return {'Title': self.title, 'Members': self.members}
@@ -122,11 +122,11 @@ class App:
 
         # Assignment Section
         self.create_label_entry("Assignment Title", 4)
-        self.assignment_points_entry = self.create_entry(5)  # Add missing entry
+        self.assignment_points_entry = self.create_entry(5)  
         self.create_label_entry("Assignment Points", 5)
-        self.assignment_category_entry = self.create_entry(6)  # Create category entry
+        self.assignment_category_entry = self.create_entry(6)  
         self.create_label_entry("Assignment Category", 6)
-        self.assignment_due_date_entry = self.create_entry(7)  # Create due date entry
+        self.assignment_due_date_entry = self.create_entry(7)  
         self.create_label_entry("Assignment Due Date", 7)
         self.add_assignment_button = self.create_button("Add Assignment", self.add_assignment, 8)
 
@@ -138,7 +138,7 @@ class App:
 
         # Project Team Section
         self.create_label_entry("Project Title", 13)
-        self.project_member_name_entry = self.create_entry(14)  # Create Team Member Name entry
+        self.project_member_name_entry = self.create_entry(14)  
         self.create_label_entry("Team Member Name", 14)
         self.add_project_button = self.create_button("Add Member to Project", self.add_team_member, 15)
         self.create_project_button = self.create_button("Create Project Team", self.create_project_team, 16)
